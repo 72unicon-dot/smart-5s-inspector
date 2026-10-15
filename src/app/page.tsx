@@ -131,6 +131,7 @@ export default function Home() {
       try { result=JSON.parse(responseText); }
       catch {throw new Error(response.status===413?'사진 전송 용량 초과(413): 사진을 줄여주세요.':`서버 응답 오류 (HTTP ${response.status}). 잠시 후 다시 시도해 주세요.`);}
       if(!response.ok)throw new Error(result.error||'클라우드 저장 실패');
+      if (!result.inspectionId) throw new Error('서버에서 점검 ID를 받지 못했습니다.');
       setCloudSavedId(result.inspectionId);
     }catch(e){setError(e instanceof Error?e.message:'서버 저장 실패');}
     finally{setCloudSaving(false);}
