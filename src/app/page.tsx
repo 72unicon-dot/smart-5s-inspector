@@ -80,23 +80,31 @@ export default function Home() {
     setPdfLink('');
   }
 
-  function onPhoto(id: string, files: FileList | null) {
+  async function onPhoto(id: string, files: FileList | null) {
     if (!files) return;
     for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/') || file.size > 8 * 1024 * 1024) {
-        setError('사진은 이미지 파일이며 한 장당 8MB 이하여야 합니다.');
+      if (!file.type.startsWith('image/') || file.size > 12 * 1024 * 1024) {
+        setError('사진은 12MB 이하의 이미지 파일만 선택해 주세요.');
         continue;
       }
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPhotos(previous => ({
-          ...previous,
-          [id]: [...(previous[id] ?? []), String(reader.result)],
-        }));
+      try {
+        const bitmap = await createImageBitmap(file);
+        const scale = Math.min(1, 1000 / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('이미지 변환을 할 수 없습니다.');
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+        const compressed = canvas.toDataURL('image/jpeg', 0.60);
+        setPhotos(previous => ({...previous, [id]: [...(previous[id] ?? []), compressed]}));
         setReport(null);
         setCloudSavedId('');
-      };
-      reader.readAsDataURL(file);
+        setPdfLink('');
+      } catch {
+        setError('사진을 처리하지 못했습니다. JPEG/PNG 사진을 다시 선택해 주세요.');
+      }
     }
   }
 
@@ -114,8 +122,14 @@ export default function Home() {
         token=signed.data.session?.access_token;
       }
       if(!token)throw new Error('익명 세션을 시작하지 못했습니다.');
-      const response=await fetch('/api/inspections',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({...data,photos})});
-      const result=await response.json();
+      const payload=JSON.stringify({...data,photos});
+      if (new TextEncoder().encode(payload).length > 3_500_000)
+        throw new Error('사진이 너무 많습니다. 현재 요청은 3.5MB 이하만 전송할 수 있습니다. 일부 사진을 줄여주세요.');
+      const response=await fetch('/api/inspections',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:payload});
+      const responseText=await response.text();
+      let result: {error?:string;inspectionId?:string};
+      try { result=JSON.parse(responseText); }
+      catch {throw new Error(response.status===413?'사진 전송 용량 초과(413): 사진을 줄여주세요.':`서버 응답 오류 (HTTP ${response.status}). 잠시 후 다시 시도해 주세요.`);}
       if(!response.ok)throw new Error(result.error||'클라우드 저장 실패');
       setCloudSavedId(result.inspectionId);
     }catch(e){setError(e instanceof Error?e.message:'서버 저장 실패');}
