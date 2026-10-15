@@ -34,7 +34,7 @@ export async function POST(req:NextRequest){
   const grade=overall>=90?'우수':overall>=80?'양호':overall>=70?'보통':overall>=60?'미흡':'불량';
   const {data:area}=i.area_id?await db.from('areas').select('name,site_id').eq('id',i.area_id).single():{data:null};
   const {data:site}=area?.site_id?await db.from('sites').select('name').eq('id',area.site_id).single():{data:null};
-  let font:Buffer;try{font=await readFile(process.env.KOREAN_FONT_PATH || (process.platform === 'win32' ? 'C:/Windows/Fonts/malgun.ttf' : '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'));}catch{return bad('한글 폰트 파일 없음. KOREAN_FONT_PATH를 확인하세요.',500);}
+  let font:Buffer;try{font=await readFile(process.env.KOREAN_FONT_PATH || path.join(process.cwd(), 'assets', 'NanumGothic.ttf'));}catch{return bad('한글 폰트 파일 없음. KOREAN_FONT_PATH를 확인하세요.',500);}
   const doc=new PDFDocument({size:'A4',margin:45});const chunks:Buffer[]=[];doc.on('data',(chunk:Buffer)=>chunks.push(chunk));
   const ended=new Promise<Buffer>((resolve,reject)=>{doc.on('end',()=>resolve(Buffer.concat(chunks)));doc.on('error',reject);});doc.registerFont('kr',font);doc.font('kr');
   const labels=['정리','정돈','청소','청결','습관화'];
