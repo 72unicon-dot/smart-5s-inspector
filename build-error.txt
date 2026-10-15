@@ -1,0 +1,27 @@
+
+> smart-5s-inspector@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.6
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 1117ms
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/app/api/reports/route.ts:51:267
+Type error: No overload matches this call.
+  Overload 1 of 2, '(src: ImageSrc, x?: number | undefined, y?: number | undefined, options?: ImageOption | undefined): PDFDocument', gave the following error.
+    Argument of type '{ fit: number[]; align: string; }' is not assignable to parameter of type 'number'.
+  Overload 2 of 2, '(src: ImageSrc, options?: ImageOption | undefined): PDFDocument', gave the following error.
+    Type '"left"' is not assignable to type '"center" | "right" | undefined'.
+
+[0m [90m 49 |[39m   [36mconst[39m sorted[33m=[39m[[33m...[39manswers][33m.[39msort((a[33m,[39mb)[33m=>[39m{[36mconst[39m x[33m=[39mitemMap[33m.[39m[36mget[39m(a[33m.[39mitem_id)[33m![39m[33m,[39my[33m=[39mitemMap[33m.[39m[36mget[39m(b[33m.[39mitem_id)[33m![39m[33m;[39m[36mreturn[39m x[33m.[39mcategory[33m-[39my[33m.[39mcategory[33m||[39mx[33m.[39mposition[33m-[39my[33m.[39mposition[33m;[39m})[33m;[39m
+ [90m 50 |[39m   [36mfor[39m([36mconst[39m a [36mof[39m sorted){[36mconst[39m item[33m=[39mitemMap[33m.[39m[36mget[39m(a[33m.[39mitem_id)[33m![39m[33m;[39mspace([35m80[39m)[33m;[39mdoc[33m.[39mfontSize([35m10[39m)[33m.[39mfillColor([32m'#153f75'[39m)[33m.[39mtext([32m`${labels[item.category-1]} ${item.position}. ${item.question}  [${a.score}점]`[39m)[33m;[39mdoc[33m.[39mfillColor([32m'#232d3d'[39m)[33m;[39m[36mif[39m(a[33m.[39mnote[33m?[39m[33m.[39mtrim())doc[33m.[39mfontSize([35m9[39m)[33m.[39mtext([32m'점검 의견: '[39m[33m+[39ma[33m.[39mnote[33m.[39mslice([35m0[39m[33m,[39m[35m500[39m))[33m;[39m[36mif[39m(a[33m.[39mscore[33m<=[39m[35m2[39m)doc[33m.[39mfontSize([35m9[39m)[33m.[39mtext([32m'개선 권고: 원인 분석 → 담당자 지정 → 시정조치 → 효과 확인'[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 51 |[39m     [36mfor[39m([36mconst[39m storedPath [36mof[39m (pmap[33m.[39m[36mget[39m(a[33m.[39mid)[33m||[39m[])[33m.[39mslice([35m0[39m[33m,[39m[35m2[39m)){space([35m180[39m)[33m;[39m[36mconst[39m {data[33m:[39mfile[33m,[39merror[33m:[39mfe}[33m=[39m[36mawait[39m db[33m.[39mstorage[33m.[39m[36mfrom[39m([32m'inspection-photos'[39m)[33m.[39mdownload(storedPath)[33m;[39m[36mif[39m(fe[33m||[39m[33m![39mfile){doc[33m.[39mtext([32m'사진 조회 불가'[39m)[33m;[39m[36mcontinue[39m[33m;[39m}[36mtry[39m{[36mconst[39m bytes[33m=[39m[33mBuffer[39m[33m.[39m[36mfrom[39m([36mawait[39m file[33m.[39marrayBuffer())[33m;[39mdoc[33m.[39mimage(bytes[33m,[39m{fit[33m:[39m[[35m210[39m[33m,[39m[35m145[39m][33m,[39malign[33m:[39m[32m'left'[39m})[33m;[39mdoc[33m.[39mmoveDown([35m.6[39m)[33m;[39m}[36mcatch[39m{doc[33m.[39mtext([32m'지원되지 않는 사진 형식'[39m)[33m;[39m}}
+ [90m    |[39m                                                                                                                                                                                                                                                                           [31m[1m^[22m[39m
+ [90m 52 |[39m     doc[33m.[39mmoveDown([35m.6[39m)[33m;[39m
+ [90m 53 |[39m   }
+ [90m 54 |[39m   doc[33m.[39mend()[33m;[39m[36mlet[39m pdf[33m:[39m[33mBuffer[39m[33m;[39m[36mtry[39m{pdf[33m=[39m[36mawait[39m ended[33m;[39m}[36mcatch[39m{[36mreturn[39m bad([32m'PDF 생성에 실패했습니다.'[39m[33m,[39m[35m500[39m)[33m;[39m}[0m
+Next.js build worker exited with code: 1 and signal: null

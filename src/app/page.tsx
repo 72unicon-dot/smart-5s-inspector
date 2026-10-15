@@ -72,7 +72,7 @@ export default function Home() {
       ...previous,
       answers: {
         ...previous.answers,
-        [id]: { note: '', ...previous.answers[id], ...patch },
+        [id]: { ...previous.answers[id], note: previous.answers[id]?.note ?? '', ...patch },
       },
     }));
     setReport(null);

@@ -48,7 +48,7 @@ export async function POST(req:NextRequest){
   doc.moveDown();header('세부 점검 및 개선 권고');
   const sorted=[...answers].sort((a,b)=>{const x=itemMap.get(a.item_id)!,y=itemMap.get(b.item_id)!;return x.category-y.category||x.position-y.position;});
   for(const a of sorted){const item=itemMap.get(a.item_id)!;space(80);doc.fontSize(10).fillColor('#153f75').text(`${labels[item.category-1]} ${item.position}. ${item.question}  [${a.score}점]`);doc.fillColor('#232d3d');if(a.note?.trim())doc.fontSize(9).text('점검 의견: '+a.note.slice(0,500));if(a.score<=2)doc.fontSize(9).text('개선 권고: 원인 분석 → 담당자 지정 → 시정조치 → 효과 확인');
-    for(const storedPath of (pmap.get(a.id)||[]).slice(0,2)){space(180);const {data:file,error:fe}=await db.storage.from('inspection-photos').download(storedPath);if(fe||!file){doc.text('사진 조회 불가');continue;}try{const bytes=Buffer.from(await file.arrayBuffer());doc.image(bytes,{fit:[210,145],align:'left'});doc.moveDown(.6);}catch{doc.text('지원되지 않는 사진 형식');}}
+    for(const storedPath of (pmap.get(a.id)||[]).slice(0,2)){space(180);const {data:file,error:fe}=await db.storage.from('inspection-photos').download(storedPath);if(fe||!file){doc.text('사진 조회 불가');continue;}try{const bytes=Buffer.from(await file.arrayBuffer());doc.image(bytes,{fit:[210,145],align:'center'});doc.moveDown(.6);}catch{doc.text('지원되지 않는 사진 형식');}}
     doc.moveDown(.6);
   }
   doc.end();let pdf:Buffer;try{pdf=await ended;}catch{return bad('PDF 생성에 실패했습니다.',500);}
