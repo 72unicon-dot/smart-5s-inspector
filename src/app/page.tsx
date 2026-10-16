@@ -145,8 +145,12 @@ export default function Home() {
       const {data:{session}}=await client.auth.getSession();
       if(!session)throw new Error('점검 세션이 만료되었습니다.');
       const response=await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({inspectionId:cloudSavedId})});
-      const json=await response.json();
+      const responseText=await response.text();
+      let json: { error?: string; downloadUrl?: string };
+      try { json=JSON.parse(responseText); }
+      catch { throw new Error(`PDF 서버 오류 (HTTP ${response.status}). 서버 로그를 확인해 주세요.`); }
       if(!response.ok)throw new Error(json.error||'PDF 생성 실패');
+      if(!json.downloadUrl)throw new Error('PDF 다운로드 주소가 반환되지 않았습니다.');
       setPdfLink(json.downloadUrl);
     }catch(e){setError(e instanceof Error?e.message:'PDF 생성 실패');}
     finally{setPdfWorking(false);}
