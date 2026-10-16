@@ -7,8 +7,8 @@ export async function POST(request:NextRequest){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
  const publishable=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  const secret=process.env.SUPABASE_SERVICE_ROLE_KEY;
- // Public delivery remains disabled until recipient ownership verification is implemented.
- if(process.env.EMAIL_DELIVERY_ENABLED !== 'true')return failure('이메일 발송은 수신주소 인증 기능 구현 전까지 비활성화되어 있습니다.',503);
+ // Test-only mode: never relay arbitrary addresses. Production recipient verification is separate.
+ const TEST_RECIPIENT='72unicon@gmail.com';
  const emailKey=process.env.RESEND_API_KEY;
  const from=process.env.REPORT_FROM_EMAIL;
  if(!url||!publishable||!secret)return failure('DB 환경변수가 누락되었습니다.',503);
@@ -23,6 +23,7 @@ export async function POST(request:NextRequest){
  const db=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
  const {data:inspection}=await db.from('inspections').select('id,inspector_email,status').eq('id',id).eq('owner_id',user.id).single();
  if(!inspection||inspection.status!=='completed')return failure('점검을 조회할 수 없습니다.',404);
+ if(inspection.inspector_email.trim().toLowerCase()!==TEST_RECIPIENT)return failure('시험 기간에는 인증된 테스트 수신주소로만 발송할 수 있습니다.',403);
  const {data:report}=await db.from('reports').select('id,storage_path,score').eq('inspection_id',id).order('created_at',{ascending:false}).limit(1).maybeSingle();
  if(!report)return failure('먼저 PDF를 생성하세요.',409);
  const {data:deliveries,error:deliveryError}=await db.from('email_deliveries').select('id,status,sent_at').eq('report_id',report.id).order('sent_at',{ascending:false}).limit(10);
